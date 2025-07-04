@@ -6,8 +6,9 @@
 </head>
 <body>
    <?php
+   session_start();
 require 'database.php';
-session_start();
+
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");

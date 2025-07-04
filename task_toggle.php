@@ -1,6 +1,7 @@
 <?php
-require 'database.php';
 session_start();
+require 'database.php';
+
 
 // ログインチェック
 if (!isset($_SESSION['user_id'])) {
