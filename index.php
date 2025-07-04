@@ -1,5 +1,5 @@
 <?php
-require 'db.php';
+require 'database.php';
 session_start();
 
 // 未ログインならリダイレクト
