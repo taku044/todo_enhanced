@@ -8,6 +8,11 @@ $db = [
     'dbname' => "LAA1554882-todolist"
 ];
 
+$_SESSION['host'] = $db['host'];
+$_SESSION['user'] = $db['user'];
+$_SESSION['pass'] = $db['pass'];
+$_SESSION['dbname'] = $db['dbname'];
+
 // DB接続
 try {
     $pdo = new PDO(
@@ -23,18 +28,18 @@ try {
 //ログイン処理
 function login($pdo)
 {
-    if (empty($_POST['name']) || empty($_POST['password'])) {
+    if (empty($_POST['username']) || empty($_POST['password'])) {
         setErrorAndRedirect('ログインに失敗しました。ユーザー名またはパスワードをご確認ください。1', 'login.php');
     }
 
     $stmt = $pdo->prepare('SELECT * FROM users WHERE username = ? AND password = ?');
-    $stmt->execute([$_POST['name'], $_POST['password']]);
+    $stmt->execute([$_POST['username'], $_POST['password']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user) {
-        $_SESSION['id'] = $user['id'];
+        $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
-        header("Location: https://aso2301192.hippy.jp/todolist/form.php");
+        header("Location: https://aso2301192.hippy.jp/todo_enhanced/index.php");
         exit();
     } else {
         setErrorAndRedirect('ログインに失敗しました。ユーザー名またはパスワードをご確認ください。', 'login.php');
@@ -45,7 +50,7 @@ function login($pdo)
 function register($pdo)
 {
     if (empty($_POST['username']) || empty($_POST['password'])) {
-        setErrorAndRedirect('登録に失敗しました。必要な情報をご確認ください。', 'Registration.php');
+        setErrorAndRedirect('登録に失敗しました。必要な情報をご確認ください。', 'registr.php');
     }
 
     try {
@@ -64,44 +69,43 @@ function register($pdo)
             session_regenerate_id(true);
             $_SESSION['id'] = $user['id'];
             $_SESSION['name'] = $user['username'];
-            header("Location: list.php");
+            header("Location: index.php");
             exit();
         } else {
-            setErrorAndRedirect('登録後のログインに失敗しました。', 'Registration.php');
+            setErrorAndRedirect('登録後のログインに失敗しました。', 'registr.php');
         }
     } catch (PDOException $e) {
-        setErrorAndRedirect('データベースエラー: ' . $e->getMessage(), 'Registration.php');
+        setErrorAndRedirect('データベースエラー: ' . $e->getMessage(), 'registr.php');
     }
 }
 
 //todo登録
 function todo($pdo)
 {
-    if (empty($_SESSION['id']) || empty($_POST['task']) || empty($_POST['status']) || empty($_POST['due_date'])
+    if (empty($_SESSION['user_id']) || empty($_POST['task']) || empty($_POST['due_date'])
         || empty($_POST['priority'])) {
-        setErrorAndRedirect('投稿に失敗しました。', 'list.php');
+        setErrorAndRedirect('投稿に失敗しました。', 'index.php');
     }
 
 try {
-        $stmt = $pdo->prepare('INSERT INTO todos (user_id, task, status, due_date, priority) VALUES (?, ?, ?, ?, ?)');
+        $stmt = $pdo->prepare('INSERT INTO todos (user_id, task, due_date, priority) VALUES (?, ?, ?, ?)');
         $stmt->execute([
-            $_SESSION['id'],
+            $_SESSION['user_id'],
             $_POST['task'],
-            $_POST['status'],
             $_POST['due_date'],
             $_POST['priority'],
         ]);
         $_SESSION['message'] = "投稿に成功しました！";
-        header("Location: https://aso2301192.hippy.jp/todolist/list.php");
+        header("Location: index.php");
         exit();
     } catch (PDOException $e) {
-        setErrorAndRedirect('データベースエラー: ' . $e->getMessage(), 'list.php');
+        setErrorAndRedirect('データベースエラー: ' . $e->getMessage(), 'index.php');
     }
 }
 function setErrorAndRedirect($message, $redirectPath)
 {
     $_SESSION['login_error'] = $message;
-    header("Location: https://aso2301192.hippy.jp/todolist/" . $redirectPath);
+    header("Location: https://aso2301192.hippy.jp/todo_enhanced/" . $redirectPath);
     exit();
 }
 
@@ -112,7 +116,7 @@ if ($_POST['check'] === 'login') {
     login($pdo);
 } 
 elseif ($_POST['check'] === 'registration') {
-    todo($pdo);
+    register($pdo);
 }
 elseif ($_POST['check'] === 'todos') {
     todo($pdo);
