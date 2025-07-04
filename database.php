@@ -57,7 +57,7 @@ function register($pdo)
 
         // 登録後ログイン処理
         $stm = $pdo->prepare('SELECT * FROM users WHERE username = ? AND password = ?');
-        $stm->execute([$_POST['username'], $_POST['passwodr']]);
+        $stm->execute([$_POST['username'], $_POST['password']]);
         $user = $stm->fetch(PDO::FETCH_ASSOC);
 
         if ($user) {
